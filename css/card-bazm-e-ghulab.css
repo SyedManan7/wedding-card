@@ -1,0 +1,994 @@
+/* =============================================================
+   BAZM-E-GHULAB -- a burgundy wedding card sealed in ivory wax.
+
+   Drawn on two canvases, exactly as the design files are:
+     phone    390 wide   (every page 844 tall, the first 925)
+     desktop  1440 wide  (every page 800 tall, the first 975)
+   Every measurement below is written in `u`, one design pixel, and `u` is
+   the card's own width divided by the canvas it was drawn on -- so the card
+   is the design at any width rather than only at 390 and 1440.
+
+   Colours are the design's own and follow the colour picker:
+     --bz-ink       headings, buttons, the pills          #711D2B
+     --bz-deep      the countdown panel and event pages   #5F0606
+     --bz-gold      dates and small print                 #A98A62
+   `--primary`, `--maroon-deep` and `--gold` are set on the body when a
+   customer picks their own colours (see _recolour.ejs); until they do, the
+   fallbacks after the commas are the design.
+   ============================================================= */
+
+:root {
+  --bz-mincho: 'BIZ UDMincho', 'Noto Serif JP', Georgia, serif;
+  --bz-script: 'Qwigley', 'Brush Script MT', cursive;
+  --bz-tap: 'Arizonia', 'Qwigley', cursive;
+  --bz-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --bz-serif: 'Cormorant Garamond', Georgia, serif;
+}
+
+body.bg-body {
+  --bz-ink: var(--primary, #711D2B);
+  --bz-deep: var(--maroon-deep, #5F0606);
+  --bz-gold: var(--gold, #A98A62);
+  --bz-canvas: #EDEBE5;
+  --bz-text: #5F5E5C;
+  --bz-black: #111;
+  margin: 0;
+  background: var(--bz-canvas);
+  color: var(--bz-text);
+  font-family: var(--bz-mincho);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  /* `clip`, not `hidden`: setting only one axis's overflow to a scrolling
+     value forces the other axis to `auto` too, which would turn the body
+     into its own scroll container -- and then window scroll events (which
+     is what the page's fade-in and the scroll cue both listen for) never
+     fire, because it is the body that is scrolling, not the window. `clip`
+     trims the horizontal overflow without creating a scroller. */
+  overflow-x: clip;
+}
+
+html { background: var(--bz-canvas); scroll-behavior: smooth; }
+html.bg-sealed, html.bg-sealed body { overflow: hidden; height: 100%; }
+
+/* One scroll, one page -- same as card-elegant-wedding.css. Each section is
+   a whole painting, so a scroll or a flick settles on the next one instead
+   of leaving the reader halfway between two of them. `always` is what makes
+   even a small, hard flick land on the very next page rather than skipping
+   past it. */
+html { scroll-snap-type: y mandatory; }
+.bg-sec { scroll-snap-align: start; scroll-snap-stop: always; }
+
+/* ---------------------------------------------------------------- the card */
+
+.bg-card {
+  container-type: inline-size;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--bz-canvas);
+}
+.bg-main {
+  --u: calc(100cqw / 390);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow-x: clip;
+}
+
+@media (min-width: 900px) {
+  .bg-card { max-width: 1920px; }
+  .bg-main { --u: calc(100cqw / 1440); }
+}
+
+.bg-sec {
+  position: relative;
+  width: 100%;
+  height: calc(844 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+  background: var(--bz-canvas);
+  overflow: hidden;
+}
+@media (min-width: 900px) { .bg-sec { height: calc(800 * var(--u)); } }
+
+.bg-col {
+  width: 100%;
+  max-width: calc(300 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+}
+
+.bg-mobile-only { display: flex; }
+.bg-desktop-only { display: none; }
+@media (min-width: 900px) {
+  .bg-mobile-only { display: none; }
+  .bg-desktop-only { display: flex; }
+}
+
+/* --------------------------------------------------------------- typography */
+
+.bg-heading {
+  font-family: var(--bz-script);
+  font-weight: 400;
+  font-size: calc(50 * var(--u));
+  line-height: 1.15;
+  color: var(--bz-ink);
+  margin: 0;
+}
+.bg-rule {
+  width: calc(73 * var(--u));
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: rgba(60, 58, 54, 0.28);
+}
+.bg-rule-wide { width: calc(282 * var(--u)); }
+.bg-para {
+  font-family: var(--bz-mincho);
+  font-size: calc(18 * var(--u));
+  line-height: calc(20 * var(--u));
+  color: var(--bz-text);
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.bg-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.bg-name {
+  font-family: var(--bz-script);
+  font-weight: 400;
+  font-size: calc(72 * var(--u));
+  line-height: 0.8;
+  color: var(--bz-ink);
+  margin: 0;
+  white-space: nowrap;
+}
+.bg-weds {
+  font-family: var(--bz-script);
+  font-size: calc(34 * var(--u));
+  line-height: 1;
+  color: var(--bz-ink);
+  margin: calc(2 * var(--u)) 0;
+}
+
+/* The pill every page uses for its one big label: dark, with the black lip
+   under it and the shadow inside the top edge the design draws. */
+.bg-pill,
+.bg-dress-pill,
+.bg-rsvp-card {
+  background: var(--bz-ink);
+  color: #fff;
+  font-family: var(--bz-script);
+  box-shadow: inset 0 4px 4px rgba(0, 0, 0, 0.25), 0 calc(3 * var(--u)) 0 #000;
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------- controls */
+
+.bg-top-controls {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 60;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  transition: opacity .4s ease;
+}
+.bg-ctrl-btn {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .14));
+  transition: transform .2s ease;
+}
+.bg-ctrl-btn:hover { transform: scale(1.06); }
+.bg-ctrl-btn svg { display: block; }
+.bg-ctrl-btn:not(.is-playing) svg { opacity: .78; }
+.bg-ctrl-btn.is-playing { animation: bgPulse 2.4s ease-in-out infinite; }
+/* The music and language buttons stay on the sealed envelope (2026-10-05,
+   Ahmad: a mute button on the first page, on every design); only the scroll
+   cue waits for the card to open. */
+html.bg-sealed .bg-scroll-cue { opacity: 0; pointer-events: none; }
+
+/* The scroll cue: pinned to the bottom of the screen the whole way down. */
+.bg-scroll-cue {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 55;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border: 1px solid var(--bz-ink);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--bz-ink);
+  font: 500 13px/1.3 var(--bz-sans);
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(60, 20, 30, .16);
+  transition: opacity .4s ease, background .2s ease, box-shadow .2s ease;
+}
+.bg-scroll-cue:hover { background: #fdf9f6; box-shadow: 0 8px 22px rgba(60, 20, 30, .24); }
+.bg-scroll-cue:focus-visible { outline: 2px solid var(--bz-ink); outline-offset: 3px; }
+.bg-scroll-arrow { display: inline-block; animation: bgBob 1.5s ease-in-out infinite; }
+.bg-scroll-cue.is-top .bg-scroll-arrow { animation-name: bgBobUp; }
+
+@keyframes bgBob { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
+@keyframes bgBobUp { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-3px); } }
+@keyframes bgPulse { 0%, 100% { filter: drop-shadow(0 2px 8px rgba(113, 29, 43, .15)); } 50% { filter: drop-shadow(0 2px 14px rgba(113, 29, 43, .5)); } }
+
+.bg-confetti-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 70;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------- 1. the sealed envelope */
+
+.bg-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bz-canvas);
+  /* A real crossfade, not a snap: is-fading brings the opacity down over a
+     slow 1.1s, and only once that has actually finished does is-open turn
+     the cover off for good (visibility, not display -- display:none cannot
+     be transitioned, so it used to cut the fade off before it ever ran). */
+  transition: opacity 1.1s ease, visibility 0s linear 1.1s;
+}
+.bg-cover.is-fading { opacity: 0; }
+.bg-cover.is-open { visibility: hidden; pointer-events: none; }
+
+/* The envelope itself: always the exact 390x844 design box, scaled to fit
+   the real screen and centred by .bg-cover -- never stretched to the real
+   viewport's own aspect ratio. The flaps, the wax and the "Tap to Open" text
+   are all positioned as percentages of THIS box, so if the box's shape ever
+   drifted from 390:844 (as it used to on mobile, which filled the real
+   screen at whatever ratio that device happened to be) every one of those
+   positions would drift with it -- flaps that no longer meet, a seal that
+   sits in the wrong place. Locking the ratio here is what keeps all of that
+   lined up on any device. */
+.bg-env {
+  --e: min(calc(100vw / 390), calc(100dvh / 844));
+  position: relative;
+  width: calc(390 * var(--e));
+  height: calc(844 * var(--e));
+  overflow: hidden;
+  background: #6d1a24;
+  perspective: 1400px;
+  transition: background-color 1.4s ease 1.6s;
+}
+@media (min-width: 900px) {
+  .bg-env {
+    --e: calc(min(90vh, 900px) / 844);
+    border-radius: calc(44 * var(--e));
+  }
+}
+
+.bg-flap { position: absolute; will-change: transform; backface-visibility: hidden; }
+.bg-flap img { display: block; width: 100%; height: 100%; object-fit: fill; user-select: none; -webkit-user-drag: none; }
+/* Fold order, back to front: the bottom flap folds up first, so it sits
+   lowest; the sides fold in over it; the top flap folds down last and
+   carries the seal, so it sits highest of the four -- it must stay drawn
+   OVER the bottom flap, not under it. */
+.bg-flap-left,
+.bg-flap-right { top: 0; width: 50%; height: 100%; z-index: 7; }
+.bg-flap-left { left: 0; transform-origin: left center; transition: transform 3s cubic-bezier(.25, .8, .25, 1); }
+.bg-flap-right { right: 0; transform-origin: right center; transition: transform 3s cubic-bezier(.25, .8, .25, 1); }
+.bg-flap-top { top: 0; left: 0; width: 100%; height: auto; aspect-ratio: 780 / 919; z-index: 10; transform-origin: center top; filter: drop-shadow(0 10px 26px rgba(0, 0, 0, .5)); transition: transform 3s cubic-bezier(.25, .8, .25, 1) .1s; }
+.bg-flap-bottom { bottom: 0; left: 0; width: 100%; height: auto; aspect-ratio: 780 / 1225; z-index: 4; transform-origin: center bottom; filter: drop-shadow(0 -8px 24px rgba(0, 0, 0, .5)); transition: transform 3s cubic-bezier(.25, .8, .25, 1) .1s; }
+
+/* The wax: 162 wide, dead centre. */
+.bg-wax-btn {
+  position: absolute;
+  top: 49.4%;
+  left: 50%;
+  z-index: 20;
+  width: calc(162 * var(--e));
+  height: calc(162 * var(--e));
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: transform .3s ease, opacity .4s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .35));
+}
+.bg-wax-btn:hover { transform: translate(-50%, -50%) scale(1.04); }
+.bg-wax-btn:focus-visible { outline: 2px solid #fff; outline-offset: 6px; border-radius: 50%; }
+.bg-wax-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+/* "Tap to Open": Arizonia, 36, breathing. Centred at 64% down. */
+.bg-tap-cue {
+  position: absolute;
+  top: 61.7%;
+  left: 50%;
+  z-index: 22;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: var(--bz-tap);
+  font-size: calc(36 * var(--e));
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .55);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: bgBreathe 2.4s ease-in-out infinite;
+  transition: opacity .4s ease;
+}
+@keyframes bgBreathe {
+  0%, 100% { opacity: .72; transform: translateX(-50%) scale(.97); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
+}
+
+/* The credit every closed envelope carries. Arial, 16, centred. */
+.bg-env-credit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(40 * var(--e));
+  z-index: 22;
+  text-align: center;
+  font: 400 calc(16 * var(--e)) / 1.2 Arial, Helvetica, sans-serif;
+  color: rgba(255, 255, 255, .92);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .6);
+  transition: opacity .4s ease;
+}
+.bg-env-credit a { color: inherit; text-decoration: none; }
+.bg-env-credit a:hover { text-decoration: underline; }
+
+.bg-cover.is-opening { pointer-events: none; background: transparent; }
+.bg-cover.is-opening .bg-env { background-color: transparent; }
+.bg-cover.is-opening .bg-wax-btn { opacity: 0; transform: translate(-50%, -50%) scale(1.18); }
+/* "Tap to Open" runs its own breathing keyframes; an active animation keeps
+   re-writing an element's opacity every frame, so the opacity transition
+   below it never gets a chance to render -- the text would stay on screen,
+   fully or partly visible, until the cover itself disappeared. Cancelling
+   the animation here is what lets the transition actually fade it. */
+.bg-cover.is-opening .bg-tap-cue { animation: none; opacity: 0; }
+.bg-cover.is-opening .bg-env-credit { opacity: 0; }
+.bg-cover.is-opening .bg-flap-left { transform: rotateY(-128deg); }
+.bg-cover.is-opening .bg-flap-right { transform: rotateY(128deg); }
+.bg-cover.is-opening .bg-flap-top { transform: rotateX(128deg); }
+.bg-cover.is-opening .bg-flap-bottom { transform: rotateX(-128deg); }
+
+/* ------------------------------------------- 1b. the arch, the first page */
+
+/* The hero and the closing page are drawn on a taller canvas than every
+   other page (925/975 against everyone else's 844/800) because the arch
+   drawing needs the room -- but every section now has to be the SAME
+   844/800 so the card never scrolls further than its own frame per page.
+
+   Shrinking the whole composition to fit was the first attempt here and it
+   was wrong: the arch is nearly square, so shrinking it to fit a shorter
+   height also makes it narrower, and a smaller drawing centred on the same
+   1440-wide canvas just reads as a small picture lost in a lot of empty
+   cream. closing (below) already had the right answer for the same problem:
+   keep the art at its own size and let .bg-sec's own overflow:hidden trim
+   the sliver that runs past the bottom, the same way it always trimmed the
+   4px this ran past 844 on mobile. Nothing moves, nothing shrinks, only the
+   last few percent of decorative floor at the very bottom is ever cropped. */
+.bg-hero { justify-content: flex-start; }
+
+.bg-arch {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  /* phone: the drawing at its own size (787 x 776), centred, so the roses on
+     the left and the lantern on the right both run off the edges */
+  left: 50%;
+  top: calc(72 * var(--u));
+  width: calc(787 * var(--u));
+  height: calc(776 * var(--u));
+  transform: translateX(-50%);
+}
+/* The picture itself. A background-image, not an <img>, so the colour
+   picker can swap it for the same drawing repainted in the customer's
+   colour (var(--bz-art-arch)) without touching the markup -- see
+   _recolour.ejs and lib/svg-tint.js's paintSvg. Nothing changes for a card
+   that never picks a colour: the variable is only ever set once one is
+   chosen, and until then this falls back to the original artwork. */
+.bg-arch { background-image: var(--bz-art-arch, url('../img/templates/bazm-e-ghulab/arch.webp')); background-size: 100% 100%; background-repeat: no-repeat; }
+@media (min-width: 900px) {
+  .bg-arch { top: 0; width: calc(976 * var(--u)); height: calc(975 * var(--u)); }
+}
+
+.bg-hero-body,
+.bg-closing-body {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(210 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.bg-hero-body { top: calc(382 * var(--u)); width: calc(216 * var(--u)); }
+@media (min-width: 900px) {
+  .bg-hero-body { top: calc(405 * var(--u)); width: calc(206 * var(--u)); }
+}
+
+.bg-eyebrow {
+  font-family: var(--bz-script);
+  font-size: calc(20 * var(--u));
+  line-height: 1;
+  color: var(--bz-ink);
+  margin: 0 0 calc(22 * var(--u));
+}
+@media (min-width: 900px) {
+  .bg-eyebrow {
+    font-family: var(--bz-mincho);
+    font-size: calc(14 * var(--u));
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bz-gold);
+    margin-bottom: calc(18 * var(--u));
+  }
+}
+.bg-hero-blessing { margin: 0 0 calc(28 * var(--u)); }
+.bg-hero-sub { margin: calc(26 * var(--u)) 0 0; max-width: calc(165 * var(--u)); }
+@media (min-width: 900px) {
+  .bg-hero-sub { max-width: calc(140 * var(--u)); margin-top: calc(34 * var(--u)); }
+}
+
+/* Everything on the first page arrives, one after another, once the
+   envelope is open. */
+.bg-hero-body > *,
+.bg-closing-body > * {
+  opacity: 0;
+  translate: 0 calc(14 * var(--u));
+  transition: opacity .9s cubic-bezier(.22, .61, .28, 1), translate .9s cubic-bezier(.22, .61, .28, 1);
+}
+.bg-hero.is-shown .bg-hero-body > *,
+.bg-closing.is-seen .bg-closing-body > * { opacity: 1; translate: none; }
+.bg-hero.is-shown .bg-hero-body > *:nth-child(1) { transition-delay: .1s; }
+.bg-hero.is-shown .bg-hero-body > *:nth-child(2) { transition-delay: .3s; }
+.bg-hero.is-shown .bg-hero-body > *:nth-child(3) { transition-delay: .55s; }
+.bg-hero.is-shown .bg-hero-body > *:nth-child(4) { transition-delay: .85s; }
+.bg-closing.is-seen .bg-closing-body > *:nth-child(1) { transition-delay: .1s; }
+.bg-closing.is-seen .bg-closing-body > *:nth-child(2) { transition-delay: .3s; }
+.bg-closing.is-seen .bg-closing-body > *:nth-child(3) { transition-delay: .55s; }
+
+.bg-arch { opacity: 0; transition: opacity 1.2s ease; }
+.bg-hero.is-shown .bg-arch,
+.bg-closing.is-seen .bg-arch,
+.bg-hero.no-gate .bg-arch { opacity: 1; }
+
+/* ------------------------------------------------------- 2. dear guests */
+
+.bg-guests-sec .bg-col { max-width: calc(295 * var(--u)); }
+.bg-guests-sec .bg-heading { font-size: calc(47 * var(--u)); }
+.bg-guests-sec .bg-rule { margin: calc(21 * var(--u)) 0 calc(22 * var(--u)); }
+.bg-guests-sec .bg-para { max-width: calc(290 * var(--u)); }
+.bg-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(30 * var(--u)) calc(17 * var(--u));
+  width: calc(295 * var(--u));
+  margin-top: calc(54 * var(--u));
+}
+.bg-pill {
+  width: calc(139 * var(--u));
+  height: calc(48 * var(--u));
+  border-radius: calc(24 * var(--u));
+  font-size: calc(32 * var(--u));
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: calc(3 * var(--u));
+  white-space: nowrap;
+}
+
+/* --------------------------------------------- 3. you are joyfully invited */
+
+.bg-welcome-sec .bg-col { max-width: calc(300 * var(--u)); }
+.bg-welcome-blessing { max-width: calc(260 * var(--u)); }
+.bg-welcome-sec .bg-rule { margin: calc(20 * var(--u)) 0 0; }
+.bg-welcome-sec .bg-heading {
+  font-size: calc(50 * var(--u));
+  margin: calc(24 * var(--u)) 0 calc(28 * var(--u));
+  white-space: nowrap;
+}
+.bg-welcome-sec .bg-rule-wide { margin: 0; }
+.bg-welcome-sec .bg-names { margin: calc(4 * var(--u)) 0 calc(6 * var(--u)); }
+.bg-welcome-note { margin-top: calc(28 * var(--u)); }
+.bg-bouquet {
+  display: block;
+  width: calc(94 * var(--u));
+  aspect-ratio: 320 / 378;
+  margin-top: calc(26 * var(--u));
+  background-image: var(--bz-art-bouquet, url('../img/templates/bazm-e-ghulab/bouquet.webp'));
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+@media (min-width: 900px) {
+  .bg-welcome-sec .bg-col { max-width: calc(700 * var(--u)); }
+  .bg-welcome-blessing { max-width: none; white-space: nowrap; }
+  .bg-welcome-sec .bg-rule-wide { width: calc(472 * var(--u)); }
+  .bg-welcome-sec .bg-heading { margin: calc(24 * var(--u)) 0 calc(24 * var(--u)); }
+  .bg-bouquet { width: calc(144 * var(--u)); margin-top: calc(22 * var(--u)); }
+  .bg-welcome-note { margin-top: calc(22 * var(--u)); }
+}
+
+/* ------------------------------------------------------- 4. portraits */
+
+.bg-portraits-grid {
+  --k: 1;
+  position: relative;
+  width: calc(390 * var(--u));
+  height: calc(440 * var(--u));
+  margin-top: calc(52 * var(--u));
+}
+@media (min-width: 900px) {
+  .bg-portraits-grid { --k: .926; width: calc(390 * var(--u)); height: calc(400 * var(--u)); margin-top: calc(28 * var(--u)); }
+}
+.bg-portraits-sec .bg-col { max-width: none; }
+.bg-portrait {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  margin: 0;
+}
+.bg-portrait-groom { left: calc(39 * var(--u) * var(--k) + (1 - var(--k)) * 92 * var(--u)); top: 0; }
+.bg-portrait-bride { left: calc(224 * var(--u) * var(--k) + (1 - var(--k)) * 92 * var(--u)); top: calc(197 * var(--u) * var(--k)); }
+.bg-portrait-ring {
+  width: calc(135 * var(--u) * var(--k));
+  height: calc(135 * var(--u) * var(--k));
+  border-radius: 50%;
+  border: calc(5 * var(--u)) solid var(--bz-canvas);
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #d8d5cf;
+  box-shadow: 0 2px 10px rgba(60, 40, 30, .12);
+}
+.bg-portrait-bride .bg-portrait-ring { width: calc(147 * var(--u) * var(--k)); height: calc(147 * var(--u) * var(--k)); }
+.bg-portrait-ring img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bg-portrait-name {
+  font-family: var(--bz-mincho);
+  font-size: calc(18 * var(--u) * var(--k));
+  line-height: calc(20 * var(--u) * var(--k));
+  color: var(--bz-black);
+  margin: calc(4 * var(--u)) 0 0;
+  max-width: calc(150 * var(--u) * var(--k));
+  text-align: center;
+}
+.bg-spray { position: absolute; z-index: 1; pointer-events: none; background-repeat: no-repeat; background-size: contain; background-position: center; }
+.bg-spray-up {
+  left: calc(168 * var(--u) * var(--k) + (1 - var(--k)) * 92 * var(--u)); top: calc(30 * var(--u) * var(--k)); width: calc(140 * var(--u) * var(--k));
+  aspect-ratio: 388 / 320;
+  background-image: var(--bz-art-spray-up, url('../img/templates/bazm-e-ghulab/portraits/spray-up.webp'));
+}
+.bg-spray-down {
+  left: calc(85 * var(--u) * var(--k) + (1 - var(--k)) * 92 * var(--u)); top: calc(212 * var(--u) * var(--k)); width: calc(147 * var(--u) * var(--k));
+  aspect-ratio: 414 / 378;
+  background-image: var(--bz-art-spray-down, url('../img/templates/bazm-e-ghulab/portraits/spray-down.webp'));
+}
+
+/* --------------------------------------------------------- 5. families */
+
+/* Two families, each with an avatar, parents' names and two contact
+   buttons, is more than 844 holds on a phone -- it was clipping the second
+   family's contact card off entirely rather than showing it short. Grows
+   like the events and gallery pages do, for the same reason. */
+.bg-families-sec { height: auto; min-height: calc(844 * var(--u)); justify-content: flex-start; padding: calc(4 * var(--u)) 0 calc(24 * var(--u)); }
+.bg-families-sec .bg-col { max-width: none; }
+.bg-families-sec .bg-heading { font-size: calc(46 * var(--u)); line-height: 1; }
+.bg-family-blessing { max-width: calc(250 * var(--u)); margin: calc(14 * var(--u)) 0 calc(20 * var(--u)); }
+.bg-family-cards { display: flex; flex-direction: column; align-items: center; gap: calc(26 * var(--u)); }
+.bg-family-block { display: flex; flex-direction: column; align-items: center; width: calc(250 * var(--u)); }
+.bg-family-avatar {
+  width: calc(72 * var(--u));
+  height: calc(96 * var(--u));
+  border-radius: calc(12 * var(--u));
+  background: #969696;
+  overflow: hidden;
+}
+.bg-family-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bg-family-parents {
+  font-family: var(--bz-mincho);
+  font-weight: 700;
+  font-size: calc(18 * var(--u));
+  line-height: calc(22 * var(--u));
+  color: #000;
+  margin: calc(20 * var(--u)) 0 calc(20 * var(--u));
+}
+.bg-contact-list { display: flex; flex-direction: column; gap: calc(13 * var(--u)); width: 100%; }
+.bg-contact-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(78 * var(--u));
+  border-radius: calc(20 * var(--u));
+  text-decoration: none;
+  font-family: var(--bz-mincho);
+  font-size: calc(18 * var(--u));
+  line-height: calc(26 * var(--u));
+  box-sizing: border-box;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.bg-contact-btn:active { transform: scale(.98); }
+.bg-contact-primary { background: var(--bz-deep); color: #fff; font-weight: 700; }
+.bg-contact-outline { background: rgba(255, 255, 255, .6); border: 1px solid #e3e1dc; color: var(--bz-text); }
+.bg-contact-name, .bg-contact-phone { display: block; }
+@media (min-width: 900px) {
+  .bg-families-sec { justify-content: center; padding-top: 0; }
+  .bg-families-sec .bg-heading { font-size: calc(48 * var(--u)); }
+  .bg-family-blessing { max-width: calc(470 * var(--u)); margin: calc(30 * var(--u)) 0 calc(40 * var(--u)); }
+  .bg-family-cards { flex-direction: row; align-items: flex-start; justify-content: center; gap: calc(40 * var(--u)); }
+  .bg-family-block { width: calc(259 * var(--u)); }
+  .bg-family-parents { margin: calc(22 * var(--u)) 0 calc(20 * var(--u)); }
+}
+
+/* ------------------------------------------------------- 6. countdown */
+
+.bg-countdown-frame-wrap {
+  position: relative;
+  width: calc(390 * var(--u));
+  height: calc(514 * var(--u));
+  margin-top: calc(-28 * var(--u));
+}
+.bg-frame-img {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: var(--bz-art-frame, url('../img/templates/bazm-e-ghulab/countdown/frame.webp'));
+  background-size: 100% 100%; background-repeat: no-repeat;
+}
+.bg-countdown-inner {
+  position: absolute;
+  left: calc(52 * var(--u));
+  right: calc(52 * var(--u));
+  top: calc(168 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+.bg-cd-heading {
+  font-family: var(--bz-script);
+  font-weight: 400;
+  font-size: calc(46 * var(--u));
+  line-height: 1;
+  margin: 0 0 calc(18 * var(--u));
+  color: #f4e9e6;
+}
+.bg-countdown-inner .bg-rule { background: rgba(255, 255, 255, .85); }
+.bg-cd-values {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(272 * var(--u));
+  margin: calc(10 * var(--u)) 0;
+  font-variant-numeric: tabular-nums;
+}
+.bg-cd-unit { display: flex; flex-direction: column; align-items: center; flex: 1 1 0; }
+.bg-cd-val { font-family: var(--bz-mincho); font-size: calc(27 * var(--u)); line-height: 1.1; color: #fff; }
+.bg-cd-lbl { font-family: var(--bz-mincho); font-size: calc(13 * var(--u)); line-height: 1.2; letter-spacing: .02em; color: rgba(255, 190, 190, .42); }
+.bg-cd-sep { width: 1px; height: calc(30 * var(--u)); margin-top: calc(-8 * var(--u)); background: rgba(255, 255, 255, .8); }
+.bg-cd-target { font-family: var(--bz-mincho); font-size: calc(18 * var(--u)); line-height: 1.2; margin: calc(14 * var(--u)) 0 0; color: #fff; }
+
+/* The gold foil the date is hidden under. */
+.bg-scratch-pod {
+  position: absolute;
+  left: calc(58 * var(--u));
+  right: calc(58 * var(--u));
+  top: calc(150 * var(--u));
+  height: calc(210 * var(--u));
+  z-index: 5;
+  border-radius: calc(46 * var(--u));
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+}
+.bg-scratch-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.bg-scratch-prompt {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6 * var(--u));
+  pointer-events: none;
+  font-family: var(--bz-script);
+  font-size: calc(34 * var(--u));
+  color: #5b3413;
+  text-shadow: 0 1px 0 rgba(255, 244, 220, .7);
+  transition: opacity .4s ease;
+}
+.bg-scratch-prompt small { font: 400 calc(12 * var(--u)) / 1 var(--bz-mincho); letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
+.bg-scratch-hand { animation: bgWiggle 1.6s ease-in-out infinite; display: inline-block; }
+@keyframes bgWiggle { 0%, 100% { transform: translateX(-8px) rotate(-8deg); } 50% { transform: translateX(8px) rotate(8deg); } }
+.bg-countdown-frame-wrap.is-revealed { animation: bgPop .9s cubic-bezier(.22, .61, .28, 1); }
+@keyframes bgPop { 0% { transform: scale(1); } 35% { transform: scale(1.045); } 100% { transform: scale(1); } }
+@media (min-width: 900px) { .bg-countdown-frame-wrap { margin-top: 0; } }
+
+/* --------------------------------------------------------- 7. events */
+
+.bg-events-sec { background: var(--bz-deep); height: auto; min-height: calc(844 * var(--u)); justify-content: center; padding: calc(19 * var(--u)) 0; }
+.bg-events-sec .bg-col { max-width: none; }
+.bg-events-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(17 * var(--u));
+  width: 100%;
+}
+.bg-event-card {
+  width: calc(353 * var(--u));
+  min-height: calc(545 * var(--u));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(24 * var(--u)) calc(22 * var(--u));
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: calc(16 * var(--u));
+  background: rgba(255, 255, 255, .09);
+  color: #fff;
+}
+.bg-ev-title { font-family: var(--bz-script); font-weight: 400; font-size: calc(36 * var(--u)); line-height: 1.1; margin: 0 0 calc(6 * var(--u)); color: #fff; }
+.bg-ev-art { width: calc(119 * var(--u)); height: calc(119 * var(--u)); border-radius: 50%; background: #fff; overflow: hidden; margin: 0 0 calc(14 * var(--u)); }
+.bg-ev-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bg-ev-line { font-family: var(--bz-mincho); font-size: calc(18 * var(--u)); line-height: calc(28 * var(--u)); letter-spacing: .1em; color: rgba(255, 255, 255, .9); margin: 0; overflow-wrap: anywhere; }
+.bg-ev-btns { display: flex; flex-direction: column; align-items: center; gap: calc(8 * var(--u)); width: 100%; margin-top: calc(14 * var(--u)); }
+.bg-ev-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(258 * var(--u));
+  height: calc(44 * var(--u));
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 999px;
+  background: var(--bz-deep);
+  color: #fff;
+  font-family: var(--bz-mincho);
+  font-weight: 700;
+  font-size: calc(16 * var(--u));
+  letter-spacing: .06em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+.bg-ev-btn:hover { background: rgba(255, 255, 255, .14); }
+.bg-ev-btn:active { transform: scale(.98); }
+.bg-ev-cal {
+  border: 0;
+  background: none;
+  height: auto;
+  width: auto;
+  font-weight: 400;
+  font-size: calc(13 * var(--u));
+  letter-spacing: .08em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: rgba(255, 255, 255, .7);
+  padding: calc(2 * var(--u)) 0;
+}
+@media (min-width: 900px) {
+  .bg-events-sec { height: calc(800 * var(--u)); min-height: 0; padding: 0; }
+  .bg-events-grid { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: calc(25 * var(--u)); width: calc(1230 * var(--u)); margin: 0 auto; }
+  .bg-event-card { width: calc(352 * var(--u)); min-height: calc(357 * var(--u)); justify-content: flex-start; padding: calc(16 * var(--u)) calc(20 * var(--u)) calc(20 * var(--u)); }
+  .bg-ev-title { font-size: calc(32 * var(--u)); margin-bottom: calc(4 * var(--u)); }
+  .bg-ev-art { margin-bottom: calc(10 * var(--u)); }
+  .bg-ev-line { line-height: calc(28 * var(--u)); }
+  .bg-ev-btns { margin-top: calc(6 * var(--u)); }
+}
+
+/* -------------------------------------------------------- 8. dress code */
+
+.bg-dress-sec .bg-col { max-width: calc(300 * var(--u)); }
+.bg-dress-sec .bg-heading { font-size: calc(50 * var(--u)); }
+.bg-dress-art { display: block; width: calc(281 * var(--u)); height: auto; margin: calc(56 * var(--u)) 0 calc(56 * var(--u)); }
+.bg-dress-sec .bg-para { max-width: calc(285 * var(--u)); }
+.bg-dress-pill {
+  margin-top: calc(26 * var(--u));
+  min-width: calc(222 * var(--u));
+  min-height: calc(65 * var(--u));
+  padding: 0 calc(28 * var(--u)) calc(4 * var(--u));
+  border-radius: calc(33 * var(--u));
+  font-size: calc(36 * var(--u));
+  line-height: calc(60 * var(--u));
+  white-space: nowrap;
+}
+.bg-dress-aside { margin-top: calc(26 * var(--u)); }
+@media (min-width: 900px) {
+  .bg-dress-sec .bg-heading { font-size: calc(50 * var(--u)); }
+  .bg-dress-art { width: calc(400 * var(--u)); margin: calc(40 * var(--u)) 0 calc(44 * var(--u)); }
+  .bg-dress-pill { margin-top: calc(20 * var(--u)); }
+  .bg-dress-aside { margin-top: calc(24 * var(--u)); }
+}
+
+/* -------------------------------------------------------- 9. gallery */
+
+/* Photos 50% bigger on mobile (96 -> 144), 200% bigger on desktop (118 ->
+   354, i.e. three times the size). Bigger photos than the old six-around-
+   the-bouquet fan can hold without covering one another, so the whole
+   layout is redrawn around the new size rather than just scaling the old
+   numbers up -- and since this page had far more empty room than any other
+   already, it grows past the usual 844/800 (like the events page already
+   does for the same reason: content that would rather not be shrunk to fit)
+   instead of squeezing the bigger photos back down to fit a fixed frame. */
+.bg-gallery-sec { height: auto; min-height: calc(844 * var(--u)); justify-content: center; padding: calc(30 * var(--u)) 0; }
+.bg-gallery-sec .bg-col { max-width: none; }
+.bg-gallery-sec .bg-heading { font-size: calc(45 * var(--u)); white-space: nowrap; }
+.bg-gallery {
+  position: relative;
+  width: calc(390 * var(--u));
+  height: calc(584 * var(--u));
+  margin-top: calc(20 * var(--u));
+}
+.bg-shot { position: absolute; width: calc(144 * var(--u)); height: calc(144 * var(--u)); border-radius: calc(18 * var(--u)); overflow: hidden; background: #d9d6d0; box-shadow: 0 4px 16px rgba(50, 30, 30, .16); }
+.bg-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bg-gallery-bouquet {
+  position: absolute; left: calc(150 * var(--u)); top: 0; width: calc(90 * var(--u));
+  aspect-ratio: 320 / 378;
+  background-image: var(--bz-art-bouquet, url('../img/templates/bazm-e-ghulab/bouquet.webp'));
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+}
+/* two columns, three rows -- left tilted one way, right tilted the other */
+.bg-shot-1 { left: calc(38 * var(--u)); top: calc(108 * var(--u)); transform: rotate(-6deg); }
+.bg-shot-2 { left: calc(208 * var(--u)); top: calc(108 * var(--u)); transform: rotate(6deg); }
+.bg-shot-3 { left: calc(38 * var(--u)); top: calc(274 * var(--u)); transform: rotate(5deg); }
+.bg-shot-4 { left: calc(208 * var(--u)); top: calc(274 * var(--u)); transform: rotate(-5deg); }
+.bg-shot-5 { left: calc(38 * var(--u)); top: calc(440 * var(--u)); transform: rotate(-7deg); }
+.bg-shot-6 { left: calc(208 * var(--u)); top: calc(440 * var(--u)); transform: rotate(7deg); }
+@media (min-width: 900px) {
+  .bg-gallery-sec { min-height: calc(800 * var(--u)); padding: calc(40 * var(--u)) 0; }
+  .bg-gallery-sec .bg-heading { font-size: calc(50 * var(--u)); }
+  .bg-gallery { width: calc(1440 * var(--u)); height: calc(978 * var(--u)); margin-top: calc(30 * var(--u)); }
+  .bg-shot { width: calc(354 * var(--u)); height: calc(354 * var(--u)); border-radius: calc(22 * var(--u)); top: auto; }
+  .bg-gallery-bouquet { left: calc(620 * var(--u)); top: 0; width: calc(200 * var(--u)); }
+  /* three across, two rows */
+  .bg-shot-1 { left: calc(60 * var(--u)); top: calc(230 * var(--u)); transform: rotate(-10deg); }
+  .bg-shot-2 { left: calc(543 * var(--u)); top: calc(230 * var(--u)); transform: none; }
+  .bg-shot-3 { left: calc(1026 * var(--u)); top: calc(230 * var(--u)); transform: rotate(10deg); }
+  .bg-shot-4 { left: calc(60 * var(--u)); top: calc(624 * var(--u)); transform: rotate(-10deg); }
+  .bg-shot-5 { left: calc(543 * var(--u)); top: calc(624 * var(--u)); transform: none; }
+  .bg-shot-6 { left: calc(1026 * var(--u)); top: calc(624 * var(--u)); transform: rotate(10deg); }
+}
+
+/* ------------------------------------------------- 10/11. rsvp and faqs */
+
+.bg-rsvp-sec .bg-heading, .bg-faqs-sec .bg-heading { font-size: calc(50 * var(--u)); }
+.bg-rsvp-sec .bg-para { max-width: calc(300 * var(--u)); margin: calc(44 * var(--u)) 0 calc(30 * var(--u)); line-height: calc(22 * var(--u)); }
+.bg-rsvp-card {
+  width: calc(297 * var(--u));
+  min-height: calc(110 * var(--u));
+  border-radius: calc(44 * var(--u));
+  padding: calc(8 * var(--u)) calc(10 * var(--u)) calc(10 * var(--u));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.bg-rsvp-line, .bg-rsvp-date { font-family: var(--bz-script); font-size: calc(40 * var(--u)); line-height: 1.2; margin: 0; color: #fff; }
+.bg-faqs-grid { display: flex; flex-direction: column; align-items: center; gap: calc(22 * var(--u)); margin-top: calc(38 * var(--u)); }
+.bg-faq-card {
+  width: calc(301 * var(--u));
+  min-height: calc(105 * var(--u));
+  box-sizing: border-box;
+  padding: calc(14 * var(--u)) calc(16 * var(--u));
+  border: 1px solid #dad8d2;
+  border-radius: calc(24 * var(--u));
+  background: rgba(255, 255, 255, .28);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.bg-faq-q { font-family: var(--bz-mincho); font-weight: 700; font-size: calc(24 * var(--u)); line-height: calc(30 * var(--u)); color: #3c3b39; margin: 0; }
+.bg-faq-a { font-family: var(--bz-mincho); font-size: calc(18 * var(--u)); line-height: calc(20 * var(--u)); color: var(--bz-text); margin: calc(2 * var(--u)) 0 0; }
+
+.bg-combined-rsvp-faqs-sec { justify-content: center; }
+.bg-combined-rsvp-faqs-sec .bg-col { max-width: none; }
+.bg-combined-rsvp-faqs-sec .bg-desktop-rsvp-part,
+.bg-combined-rsvp-faqs-sec .bg-desktop-faqs-part { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.bg-combined-rsvp-faqs-sec .bg-desktop-rsvp-part .bg-para { margin: calc(30 * var(--u)) 0 calc(24 * var(--u)); }
+.bg-combined-rsvp-faqs-sec .bg-desktop-faqs-part { margin-top: calc(70 * var(--u)); }
+.bg-combined-rsvp-faqs-sec .bg-faqs-grid { flex-direction: row; justify-content: center; gap: calc(36 * var(--u)); margin-top: calc(28 * var(--u)); width: calc(1000 * var(--u)); }
+.bg-combined-rsvp-faqs-sec .bg-faq-card { width: calc(302 * var(--u)); }
+
+/* ------------------------------------------------------- 12. closing */
+
+.bg-closing { justify-content: flex-start; }
+/* Closing keeps its own, wider arch -- 844 was already this page's canvas
+   height on mobile, so nothing here needs to shrink; it only needs its own
+   width back now that the shared .bg-arch rule above is sized for the hero. */
+.bg-closing .bg-arch { top: calc(8 * var(--u)); width: calc(787 * var(--u)); height: calc(721 * var(--u)); }
+.bg-closing-body { top: calc(252 * var(--u)); width: calc(240 * var(--u)); }
+.bg-closing-date {
+  font-family: var(--bz-mincho);
+  font-size: calc(16 * var(--u));
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--bz-gold);
+  margin: 0 0 calc(30 * var(--u));
+}
+.bg-badge { display: flex; flex-direction: column; align-items: center; margin-top: calc(22 * var(--u)); text-decoration: none; }
+.bg-badge img { width: calc(38 * var(--u)); height: calc(38 * var(--u)); border-radius: calc(9 * var(--u)); display: block; }
+.bg-badge span { margin-top: calc(10 * var(--u)); font-family: var(--bz-serif); font-weight: 500; font-size: calc(24 * var(--u)); line-height: 1.15; color: var(--bz-ink); }
+.bg-credit-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  height: calc(72 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(14 * var(--u));
+  background: #f7eddd;
+  text-decoration: none;
+}
+.bg-credit-bar img { width: calc(38 * var(--u)); height: calc(38 * var(--u)); border-radius: calc(9 * var(--u)); display: block; }
+.bg-credit-bar span { font-family: var(--bz-serif); font-weight: 500; font-size: calc(28 * var(--u)); color: var(--bz-ink); }
+@media (min-width: 900px) {
+  /* Section height now matches every other desktop page (800, inherited
+     from .bg-sec) instead of its old 893 -- the arch keeps its full-bleed
+     976x975 and simply runs further under the frame's bottom edge, which
+     .bg-sec's overflow:hidden already trims the way it trimmed the
+     smaller gap before. */
+  .bg-closing .bg-arch { top: 0; width: calc(976 * var(--u)); height: calc(975 * var(--u)); }
+  .bg-closing-body { top: calc(370 * var(--u)); width: calc(260 * var(--u)); }
+  .bg-closing-date { margin-bottom: calc(26 * var(--u)); }
+  .bg-badge { margin-top: calc(18 * var(--u)); }
+  .bg-credit-bar { height: calc(65 * var(--u)); }
+  .bg-credit-bar span { font-size: calc(28 * var(--u)); }
+}
+
+/* --------------------------------------------- arriving on the way down */
+
+/* The pages come in as they are reached (see section-fade.css, which fades
+   each page's column). What it cannot reach are the things a column holds
+   a level down: the pills, the cards, the photographs. Those rise a beat
+   apart, in reading order. */
+.bg-rise {
+  opacity: 0;
+  translate: 0 calc(18 * var(--u));
+  transition: opacity .8s cubic-bezier(.22, .61, .28, 1), translate .8s cubic-bezier(.22, .61, .28, 1);
+  transition-delay: calc(var(--i, 0) * 110ms + 250ms);
+}
+.is-seen .bg-rise, .is-seen.bg-rise { opacity: 1; translate: none; }
+
+.bg-pill, .bg-portrait, .bg-family-block, .bg-shot { will-change: opacity, translate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-rise, .bg-hero-body > *, .bg-closing-body > *, .bg-arch { opacity: 1; translate: none; transition: none; }
+  .bg-tap-cue, .bg-scroll-arrow, .bg-scratch-hand, .bg-ctrl-btn.is-playing { animation: none; }
+  .bg-flap, .bg-cover, .bg-env { transition-duration: .01s !important; transition-delay: 0s !important; }
+  html { scroll-behavior: auto; scroll-snap-type: none; }
+}
+
+/* Right to left: the words turn, the pictures stay where they were drawn. */
+.ci-rtl .bg-para, .ci-rtl .bg-faq-q, .ci-rtl .bg-faq-a { direction: rtl; }
